@@ -1,8 +1,22 @@
+//!
+//! # generate-did
+//!
+//! `generate-did` is a CLI tool to generate Candid (`.did`) files for Internet Computer Rust canisters.
+//!
+//! See the [README](https://github.com/Stephen-Kimoi/generate-did) for CLI usage and installation instructions.
+//!
+//! ## Example
+//!
+//! ```sh
+//! generate-did <canister_name>
+//! ```
+
 use std::process::Command;
 use std::path::PathBuf;
 use anyhow::{Result, Context};
 use thiserror::Error;
 
+/// Errors that can occur during DID generation.
 #[derive(Error, Debug)]
 pub enum DidGeneratorError {
     #[error("Failed to build canister: {0}")]
@@ -13,14 +27,16 @@ pub enum DidGeneratorError {
     FileWriteError(String),
 }
 
-/// A struct for generating Candid (.did) files for Internet Computer canisters
+/// A struct for generating Candid (.did) files for Internet Computer canisters.
+///
+/// Most users should use the CLI (`generate-did <canister_name>`) instead of this struct directly.
 pub struct DidGenerator {
     canister_dir: PathBuf,
     canister_name: String,
 }
 
 impl DidGenerator {
-    /// Creates a new DidGenerator instance
+    /// Creates a new DidGenerator instance.
     ///
     /// # Arguments
     ///
@@ -33,7 +49,7 @@ impl DidGenerator {
         }
     }
 
-    /// Generates the .did file for the specified canister
+    /// Generates the .did file for the specified canister.
     ///
     /// This function:
     /// 1. Builds the Rust canister
