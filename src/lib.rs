@@ -1,24 +1,7 @@
 use std::process::Command;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use anyhow::{Result, Context};
 use thiserror::Error;
-
-// Helper macro for cleanup
-macro_rules! defer {
-    ($e:expr) => {
-        let _defer = Defer(Some(|| { let _ = $e; }));
-    };
-}
-
-struct Defer<F: FnOnce()>(Option<F>);
-
-impl<F: FnOnce()> Drop for Defer<F> {
-    fn drop(&mut self) {
-        if let Some(f) = self.0.take() {
-            f();
-        }
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum DidGeneratorError {
@@ -63,7 +46,6 @@ impl DidGenerator {
     pub fn generate(&self) -> Result<()> {
         println!("Generating .did file for canister: {}...", self.canister_name);
 
-        let manifest_path = self.canister_dir.join("Cargo.toml");
         let wasm_path = self.canister_dir.join("target/wasm32-unknown-unknown/release").join(format!("{}.wasm", self.canister_name));
         let did_path = self.canister_dir.join(format!("{}.did", self.canister_name));
 
@@ -117,6 +99,21 @@ mod tests {
     use super::*;
     use std::fs;
     use std::path::Path;
+
+    // Helper macro for cleanup (only used in tests)
+    macro_rules! defer {
+        ($e:expr) => {
+            let _defer = Defer(Some(|| { let _ = $e; }));
+        };
+    }
+    struct Defer<F: FnOnce()>(Option<F>);
+    impl<F: FnOnce()> Drop for Defer<F> {
+        fn drop(&mut self) {
+            if let Some(f) = self.0.take() {
+                f();
+            }
+        }
+    }
 
     fn setup_test_environment() -> Result<()> {
         // Ensure the test canister directory exists

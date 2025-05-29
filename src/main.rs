@@ -1,6 +1,6 @@
 use clap::Parser;
 use generate_did::DidGenerator;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
