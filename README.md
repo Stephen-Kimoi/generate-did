@@ -3,40 +3,36 @@
 [![Crates.io](https://img.shields.io/crates/v/generate-did.svg)](https://crates.io/crates/generate-did)
 [![Docs.rs](https://docs.rs/generate-did/badge.svg)](https://docs.rs/generate-did)
 
-A tool to generate Candid (`.did`) files for Internet Computer Rust canisters.
+A command-line tool to generate Candid (`.did`) files for Internet Computer Rust canisters.
 
 ## Features
 
 - Build your Rust canister and extract its Candid interface automatically.
-- Usable as a library in other Rust projects.
-- Simple, type-safe API.
+- Simple, robust CLI.
+<!-- - Works from either the project root or the canister directory. -->
+<!-- - Always places the `.did` file in the canister directory (DFX-compatible). -->
+
+## Installation
+
+Install from crates.io:
+```bash
+cargo install generate-did
+```
+<!-- Or, install from your local project:
+```bash
+cargo install --path .
+``` -->
 
 ## Usage
 
-### As a Library
-
-Add to your `Cargo.toml`:
-
-```toml
-[dependencies]
-generate-did = "0.1.0-beta.1"
+From your project root **or** from inside the canister directory, run:
+```bash
+generate-did <canister_name>
 ```
+- Replace `<canister_name>` with the directory name of your canister (must contain a `Cargo.toml`).
+- The `.did` file will always be placed in the canister directory.
 
-Example:
-
-```rust
-use generate_did::DidGenerator;
-
-fn main() -> anyhow::Result<()> {
-    let generator = DidGenerator::new("your_canister_name");
-    generator.generate()?;
-    Ok(())
-}
-```
-
-- Replace `"your_canister_name"` with the name of your canister directory (must contain a `Cargo.toml`).
-
-### Requirements
+## Requirements
 
 - [candid-extractor](https://github.com/dfinity/candid) must be installed and in your PATH:
   ```bash
@@ -44,14 +40,6 @@ fn main() -> anyhow::Result<()> {
   ```
 - The canister must be a Rust project with a valid `Cargo.toml` and buildable to WASM.
 
-## Development
-
-Clone the repo and run tests:
-
-```bash
-cargo test
-```
-
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
