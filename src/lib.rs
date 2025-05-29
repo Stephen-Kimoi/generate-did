@@ -1,5 +1,5 @@
 use std::process::Command;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use anyhow::{Result, Context};
 use thiserror::Error;
 
@@ -32,6 +32,7 @@ pub enum DidGeneratorError {
 
 /// A struct for generating Candid (.did) files for Internet Computer canisters
 pub struct DidGenerator {
+    canister_dir: PathBuf,
     canister_name: String,
 }
 
@@ -40,10 +41,12 @@ impl DidGenerator {
     ///
     /// # Arguments
     ///
-    /// * `canister_name` - The name of the canister to generate the .did file for
-    pub fn new(canister_name: impl Into<String>) -> Self {
+    /// * `canister_dir` - The path to the canister directory
+    pub fn new(canister_dir: PathBuf) -> Self {
+        let canister_name = canister_dir.file_name().unwrap().to_string_lossy().to_string();
         Self {
-            canister_name: canister_name.into(),
+            canister_dir,
+            canister_name,
         }
     }
 
@@ -60,20 +63,14 @@ impl DidGenerator {
     pub fn generate(&self) -> Result<()> {
         println!("Generating .did file for canister: {}...", self.canister_name);
 
-        let canister_dir = format!("src/{}", self.canister_name);
-        let manifest_path = format!("{}/Cargo.toml", canister_dir);
-        let wasm_path = format!("target/wasm32-unknown-unknown/release/{}.wasm", self.canister_name);
-        let did_path = format!("{}/{}.did", canister_dir, self.canister_name);
+        let manifest_path = self.canister_dir.join("Cargo.toml");
+        let wasm_path = self.canister_dir.join("target/wasm32-unknown-unknown/release").join(format!("{}.wasm", self.canister_name));
+        let did_path = self.canister_dir.join(format!("{}.did", self.canister_name));
 
         // Build the Rust canister
         let build_status = Command::new("cargo")
-            .current_dir(&canister_dir)
-            .args([
-                "build",
-                "--target",
-                "wasm32-unknown-unknown",
-                "--release",
-            ])
+            .current_dir(&self.canister_dir)
+            .args(["build", "--target", "wasm32-unknown-unknown", "--release"])
             .status()
             .context("Failed to execute cargo build command")?;
 
@@ -84,9 +81,9 @@ impl DidGenerator {
         }
 
         // Verify the WASM file exists
-        if !Path::new(&wasm_path).exists() {
+        if !wasm_path.exists() {
             return Err(DidGeneratorError::BuildError(
-                format!("WASM file not found at: {}", wasm_path)
+                format!("WASM file not found at: {}", wasm_path.display())
             ).into());
         }
 
@@ -104,11 +101,11 @@ impl DidGenerator {
 
         // Write the output to the .did file
         std::fs::write(&did_path, output.stdout)
-            .context(format!("Failed to write .did file to {}", did_path))?;
+            .context(format!("Failed to write .did file to {}", did_path.display()))?;
 
         println!(
             "Candid file generated successfully: {}",
-            did_path
+            did_path.display()
         );
 
         Ok(())
@@ -141,7 +138,7 @@ mod tests {
 
     #[test]
     fn test_did_generator_creation() {
-        let generator = DidGenerator::new("test_canister");
+        let generator = DidGenerator::new("test_canister".into());
         assert_eq!(generator.canister_name, "test_canister");
     }
 
@@ -150,7 +147,7 @@ mod tests {
         setup_test_environment()?;
         defer!(cleanup_test_environment());
 
-        let generator = DidGenerator::new("test_canister");
+        let generator = DidGenerator::new("test_canister".into());
         generator.generate()?;
 
         // Verify that the .did file was created

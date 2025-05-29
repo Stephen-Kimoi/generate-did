@@ -11,3 +11,8 @@ categories = ["development-tools", "command-line-utilities"]
 [dependencies]
 thiserror = "1.0"
 anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+
+[[bin]]
+name = "generate-did"
+path = "src/main.rs"
