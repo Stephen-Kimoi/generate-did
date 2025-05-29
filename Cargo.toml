@@ -1,9 +1,12 @@
 [package]
 name = "generate-did"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 edition = "2021"
+authors = ["Steve Kimoi kimoisteve.ke@gmail.com"]
 description = "A tool to generate Candid (.did) files for Internet Computer Rust canisters"
 license = "MIT"
+keywords = ["ic", "internet-computer", "candid", "did"]
+categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
 thiserror = "1.0"
