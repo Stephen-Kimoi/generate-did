@@ -1,3 +1,29 @@
 /target
 .specstory
 .cursorindexingignore
+
+# Generated DID files (ignore all generated .did files)
+examples/*/src/*/*.did
+examples/*/*.did
+
+# But keep the specific example files we want to show
+!examples/monorepo_example/monorepo_example.did
+!examples/workspace_example/src/backend/backend.did
+
+# Rust build artifacts
+**/target/
+**/Cargo.lock
+
+# Node.js (for workspace example)
+**/node_modules/
+**/package-lock.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

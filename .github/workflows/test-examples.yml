@@ -1,0 +1,58 @@
+name: Test Examples
+
+on: [push, pull_request]
+
+jobs:
+  test-monorepo:
+    name: Test Monorepo Example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install candid-extractor
+        run: cargo install candid-extractor
+
+      - name: Install generate-did
+        run: cargo install --path .
+
+      - name: Test monorepo example
+        run: |
+          cd examples/monorepo_example
+          generate-did monorepo_example
+          echo "Generated DID file:"
+          cat monorepo_example.did
+
+  test-workspace:
+    name: Test Workspace Example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install candid-extractor
+        run: cargo install candid-extractor
+
+      - name: Install generate-did
+        run: cargo install --path .
+
+      - name: Test workspace example
+        run: |
+          cd examples/workspace_example
+          generate-did backend
+          echo "Generated DID file:"
+          cat src/backend/backend.did 
