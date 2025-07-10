@@ -62,10 +62,8 @@ impl DidGenerator {
     pub fn generate(&self) -> Result<()> {
         println!("Generating .did file for canister: {}...", self.canister_name);
 
-        let wasm_path = self.canister_dir.join("target/wasm32-unknown-unknown/release").join(format!("{}.wasm", self.canister_name));
         let did_path = self.canister_dir.join(format!("{}.did", self.canister_name));
 
-        // Build the Rust canister
         let build_status = Command::new("cargo")
             .current_dir(&self.canister_dir)
             .args(["build", "--target", "wasm32-unknown-unknown", "--release"])
@@ -78,14 +76,10 @@ impl DidGenerator {
             ).into());
         }
 
-        // Verify the WASM file exists
-        if !wasm_path.exists() {
-            return Err(DidGeneratorError::BuildError(
-                format!("WASM file not found at: {}", wasm_path.display())
-            ).into());
-        }
+        let wasm_path = self.find_wasm_file()?;
 
-        // Generate the Candid file
+        println!("Found WASM file at: {}", wasm_path.display());
+
         let output = Command::new("candid-extractor")
             .arg(&wasm_path)
             .output()
@@ -97,7 +91,6 @@ impl DidGenerator {
             ).into());
         }
 
-        // Write the output to the .did file
         std::fs::write(&did_path, output.stdout)
             .context(format!("Failed to write .did file to {}", did_path.display()))?;
 
@@ -108,6 +101,41 @@ impl DidGenerator {
 
         Ok(())
     }
+
+    /// Find the WASM file in the appropriate location
+    fn find_wasm_file(&self) -> Result<PathBuf> {
+        let wasm_filename = format!("{}.wasm", self.canister_name);
+        
+        let canister_wasm = self.canister_dir
+            .join("target/wasm32-unknown-unknown/release")
+            .join(&wasm_filename);
+        
+        if canister_wasm.exists() {
+            return Ok(canister_wasm);
+        }
+
+        let mut current_dir = self.canister_dir.clone();
+        while let Some(parent) = current_dir.parent() {
+            let root_wasm = parent
+                .join("target/wasm32-unknown-unknown/release")
+                .join(&wasm_filename);
+            
+            if root_wasm.exists() {
+                return Ok(root_wasm);
+            }
+            
+            if parent == current_dir {
+                break;
+            }
+            current_dir = parent.to_path_buf();
+        }
+
+        Err(DidGeneratorError::BuildError(
+            format!("WASM file not found for canister '{}'. Tried:\n- {}\n- project root target directory", 
+                self.canister_name, 
+                self.canister_dir.join("target/wasm32-unknown-unknown/release").join(&wasm_filename).display())
+        ).into())
+    }
 }
 
 #[cfg(test)]
@@ -116,7 +144,6 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    // Helper macro for cleanup (only used in tests)
     macro_rules! defer {
         ($e:expr) => {
             let _defer = Defer(Some(|| { let _ = $e; }));
@@ -132,7 +159,6 @@ mod tests {
     }
 
     fn setup_test_environment() -> Result<()> {
-        // Ensure the test canister directory exists
         let test_canister_dir = Path::new("src/test_canister");
         if !test_canister_dir.exists() {
             fs::create_dir_all(test_canister_dir)?;
@@ -141,7 +167,6 @@ mod tests {
     }
 
     fn cleanup_test_environment() -> Result<()> {
-        // Clean up generated files
         let did_file = Path::new("src/test_canister/test_canister.did");
         if did_file.exists() {
             fs::remove_file(did_file)?;
@@ -163,11 +188,9 @@ mod tests {
         let generator = DidGenerator::new("test_canister".into());
         generator.generate()?;
 
-        // Verify that the .did file was created
         let did_path = Path::new("src/test_canister/test_canister.did");
         assert!(did_path.exists(), "DID file was not created");
 
-        // Read and verify the content of the .did file
         let did_content = fs::read_to_string(did_path)?;
         assert!(!did_content.is_empty(), "DID file is empty");
         assert!(did_content.contains("type User"), "DID file should contain User type");
