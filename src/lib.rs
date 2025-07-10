@@ -4,8 +4,26 @@
 //! `generate-did` is a CLI tool to generate Candid (`.did`) files for Internet Computer Rust canisters.
 //!
 //! See the [README](https://github.com/Stephen-Kimoi/generate-did) for CLI usage and installation instructions.
+//! 
+//! ## Installing candid-extractor
+//! 
+//! Install the `candid-extractor` crate
+//! ```sh
+//! cargo install candid-extractor
+//! ```
+//! 
+//! Call the `export_candid` macro at the end of your lib.rs file
+//! ```rust
+//! // Enable Candid export
+//! ic_cdk::export_candid!();
+//! ```
 //!
-//! ## Example
+//! ## Install generate-did
+//! 
+//! ```sh
+//! cargo install generate-did
+//! ```
+//! Then run this command in the root of the canister project.
 //!
 //! ```sh
 //! generate-did <canister_name>
