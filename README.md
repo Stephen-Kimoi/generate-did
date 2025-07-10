@@ -2,6 +2,8 @@
 
 [![Crates.io](https://img.shields.io/crates/v/generate-did.svg)](https://crates.io/crates/generate-did)
 [![Docs.rs](https://docs.rs/generate-did/badge.svg)](https://docs.rs/generate-did)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Test Examples](https://github.com/Stephen-Kimoi/generate-did/actions/workflows/test-examples.yml/badge.svg)](https://github.com/Stephen-Kimoi/generate-did/actions/workflows/test-examples.yml)
 
 A command-line tool to generate Candid (`.did`) files for Internet Computer Rust canisters.
 
@@ -38,6 +40,25 @@ generate-did <canister_name>
   ```bash
   cargo install candid-extractor
   ```
+- Ensure in your Rust canister code, you've called the `export_candid` macro at the end of your `lib.rs` file: 
+```rust 
+use ic_cdk::query;
+use ic_cdk::update;
+
+#[query]
+fn hello(name: String) -> String {
+    format!("Hello, {}!", name)
+}
+
+#[update]
+fn world(name: String) -> String {
+    format!("World, {}!", name)
+}
+
+// Enable Candid export
+ic_cdk::export_candid!();
+```
+
 - The canister must be a Rust project with a valid `Cargo.toml` and buildable to WASM.
 
 ## License

@@ -1,5 +1,4 @@
 use candid::{CandidType, Deserialize};
-use ic_cdk::api::call::CallResult;
 
 #[derive(CandidType, Deserialize)]
 pub struct User {
@@ -8,17 +7,19 @@ pub struct User {
 }
 
 #[ic_cdk::query]
-fn get_user(id: u64) -> CallResult<User> {
-    Ok(User {
+fn get_user(id: u64) -> User {
+    User {
         id,
         name: format!("User {}", id),
-    })
+    }
 }
 
 #[ic_cdk::update]
-fn create_user(name: String) -> CallResult<User> {
-    Ok(User {
+fn create_user(name: String) -> User {
+    User {
         id: 1,
         name,
-    })
-} 
+    }
+}
+
+ic_cdk::export_candid!();
