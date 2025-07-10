@@ -1,0 +1,2 @@
+type User = record { id : nat64; name : text };
+service : { create_user : (text) -> (User); get_user : (nat64) -> (User) query }
